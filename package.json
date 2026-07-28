@@ -1,0 +1,112 @@
+{
+  "name": "dogo-tutor",
+  "displayName": "dogo-tutor",
+  "description": "答えではなくヒントだけを返す演習用チューター。やり取りを記録し、復習教材と小テストを生成します。",
+  "version": "0.0.1",
+  "publisher": "CHANGE-ME",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CHANGE-ME/dogo-tutor"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": ["AI", "Chat", "Education"],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "chatParticipants": [
+      {
+        "id": "dogo.tutor",
+        "name": "tutor",
+        "fullName": "dogo-tutor",
+        "description": "詰まったところを聞いてください。答えは出しません。",
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "next",
+            "description": "次の段階のヒントをもらう（試したことを添えてください）"
+          },
+          {
+            "name": "review",
+            "description": "これまでのやり取りから復習ノートと小テストを生成する"
+          },
+          {
+            "name": "log",
+            "description": "記録されている学習ログの場所と件数を表示する"
+          }
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "dogoTutor.generateReview",
+        "title": "dogo-tutor: 復習ノートと小テストを生成",
+        "category": "dogo-tutor"
+      },
+      {
+        "command": "dogoTutor.openLogFolder",
+        "title": "dogo-tutor: 学習ログのフォルダを開く",
+        "category": "dogo-tutor"
+      }
+    ],
+    "configuration": {
+      "title": "dogo-tutor",
+      "properties": {
+        "dogoTutor.subject": {
+          "type": "string",
+          "default": "",
+          "description": "科目名。復習ノートのファイル名と見出しに使われます。例: 環境データベースⅡ"
+        },
+        "dogoTutor.maxHintLevel": {
+          "type": "number",
+          "default": 3,
+          "minimum": 1,
+          "maximum": 4,
+          "description": "到達を許すヒントの最大段階。3 なら擬似コードまで、4 は部分コードまで許可します。"
+        },
+        "dogoTutor.reviewOutputDir": {
+          "type": "string",
+          "default": "review",
+          "description": "復習ノートの出力先。ワークスペースからの相対パスです。"
+        },
+        "dogoTutor.references": {
+          "type": "array",
+          "default": [],
+          "markdownDescription": "科目ごとの参考資料。チューターはここと組み込みの一覧に載ったURLだけを学生に案内し、それ以外のURLは書きません。講義資料・シラバス・教科書のサポートページなどを登録してください。**必ず実在するURLを入れてください**（リンク切れは学生が調べる意欲を失う原因になります）。",
+          "items": {
+            "type": "object",
+            "required": ["label", "url"],
+            "properties": {
+              "label": {
+                "type": "string",
+                "description": "資料の名前。例: 第5回講義資料 JDBC入門"
+              },
+              "url": {
+                "type": "string",
+                "description": "URL。http:// または https:// で始まるものだけが使われます。"
+              },
+              "topics": {
+                "type": "string",
+                "description": "どんなときに見る資料か。チューターがこれを見て案内先を選びます。例: 接続文字列の書式とサンプルDBの認証情報"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.95.0",
+    "typescript": "^5.6.0",
+    "@vscode/vsce": "^3.2.0"
+  }
+}

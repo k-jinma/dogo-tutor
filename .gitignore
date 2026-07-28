@@ -1,0 +1,11 @@
+# 依存パッケージ。npm install で復元できる
+node_modules/
+
+# tsc の出力。npm run compile で復元できる
+out/
+
+# vsce package の出力
+*.vsix
+
+# 拡張のテスト実行時に作られる
+.vscode-test/
