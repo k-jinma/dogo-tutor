@@ -1,94 +1,157 @@
 # Claude Code 向け引き継ぎ書
 
-最終更新日: 2026-07-28
+最終更新日: 2026-07-29
 対象プロジェクト: dogo-tutor (VS Code 拡張)
 
-## 1. 目的
+## 1. 何をするものか
 
-- 公開前の最終確認と公開準備を完了する。
-- ローカル配布(.vsix)と Marketplace 公開の両方に対応できる状態にする。
+Copilot Chat のチャット参加者 `@tutor` として動く、大学演習向けのチューター拡張。
+答えを出さずヒントを4段階で小出しにし、やり取りを JSONL に記録して、
+そこから復習ノートと5問の確認テストを生成する。
 
-## 2. 現在の状態(完了済み)
+学生は普通の Copilot Chat をそのまま使えるので、これは強制ではなく自習の枠組み。
+抜け道を塞ぐより、`/log` の「深いヒントに頼った割合」のような指標を見せて
+自分の理解の浅さに気づかせる方向で設計している。
 
-- 名称を dogo-tutor に統一済み。
-- README に大学・学科訴求文言を追加済み。
-- 設定キーを dogoTutor.* に統一済み。
-- チャット参加者IDを dogo.tutor に統一済み。
-- LICENSE を追加済み(MIT, Copyright: kazuhiro jinma)。
-- ビルド成功済み (npm run compile)。
-- VSIX 生成成功済み (dogo-tutor-0.0.1.vsix)。
-- VSIX ローカルインストール成功済み。
+## 2. 現在の状態
+
+### 完了済み
+
+- 名称・設定キー `dogoTutor.*`・参加者ID `dogo.tutor` を統一。
+- LICENSE (MIT, Copyright: kazuhiro jinma)。
+- `publisher` を `k-jinma`、`repository.url` を実URLに設定済み。
+- Git 管理下。<https://github.com/k-jinma/dogo-tutor> の `main`。
+- `.gitignore` で `node_modules/` `out/` `*.vsix` `.vscode-test/` を除外。
+- `.vscodeignore` を整理。VSIX は 9 ファイル 24.29KB（`out/*.js` と README と LICENSE のみ）。
+- `npm run compile` 成功、`npx vsce package` 成功。
+
+### 手動テストの進捗
+
+確認できたもの:
+
+- `@tutor` がチャット候補に出る。
+- 通常質問に応答し、冒頭に `[ヒント1｜問いの整理]` 形式の段階が付く。
+- 学生のコードを読んで行番号で指摘できる（参照ファイルが応答上部に表示される）。
+- Oracle への JDBC 接続を、ヒントだけで学生が到達できた。
+
+**未確認（次の担当者にやってほしい）**:
+
+- `/log` — 件数・深いヒント割合・保存先が表示されるか。
+- `/review` — `review/YYYY-MM-DD.md` が生成されるか。
+- `dogoTutor.generateReview` / `dogoTutor.openLogFolder` がコマンドパレットから動くか。
 
 ## 3. 主要ファイル
 
-- package.json
-- package-lock.json
-- README.md
-- LICENSE
-- src/extension.ts
-- src/review.ts
-- src/prompt.ts
-- src/logger.ts
-- .vscode/launch.json
-- .vscode/tasks.json
+| ファイル | 役割 |
+| --- | --- |
+| `src/prompt.ts` | チューター人格、段階名、参照資料の一覧。**変更時は 4章 を必ず読むこと** |
+| `src/extension.ts` | 参加者登録、`/review` `/log` の分岐、コード添付、ログ記録 |
+| `src/logger.ts` | globalStorage への JSONL 追記、段階の抽出 |
+| `src/review.ts` | 直近24時間のログから Markdown 生成 |
 
-## 4. 成果物
+段階名は `prompt.ts` の `LEVEL_NAMES` と `levelTag()` が唯一の定義元。
+プロンプト・`/log` 表示・復習ノートがすべてここを参照するので、
+呼び方を変えるときはこの1箇所だけ直せばよい。ただし `logger.ts` の
+`extractLevel` が拾える形かは必ず確認すること（正規表現で段階番号を抜いている）。
 
-- dogo-tutor-0.0.1.vsix がワークスペース直下に存在。
+## 4. プロンプトを触る前に読むこと
 
-## 5. 既知事項・注意点
+実際に学生役でテストしながら7回作り直した。**その過程で分かった失敗パターン**を残す。
+同じ罠を踏み直さないでほしい。
 
-- この作業フォルダは現在 Git 管理下ではない( .git が見つからない )ため、ブランチ名・コミット差分による追跡ができない。
-- package.json の publisher が CHANGE-ME のまま。Marketplace 公開前に実値へ変更が必要。
-- package.json の repository.url が雛形(<https://github.com/CHANGE-ME/dogo-tutor>)のまま。公開前に実URLへ変更が必要。
-- Ollama 未起動/未導入時に「Unable to connect to local Ollama instance」の通知が出る。
+### 足すほど悪くなる
 
-対処方針:
+自然言語の指示は互いに干渉する。ルールを足すとモデルは「教える」のをやめて
+「書式を埋める」ようになる。実例:
 
-- 対処A: Ollama を使わない運用なら、実行モデルをクラウド側へ切替。
-- 対処B: Ollama を使う運用なら、Ollama 起動 + 対象モデル pull を実施。
+- 「次にやること」に 何を/どこで/どうなったら完了か の3点を必須にしたら、
+  一言のやり取りにも機械的に付いてきて事務書類のようになった。
+  → 完了条件は「学生が自分では正誤を判定しにくいときだけ」に緩めた。
+- 「一度に渡す課題は1つだけ」を入れたら、`Statement` → `PreparedStatement` の
+  変更を宣言行だけに切り、実行行を消させて、結果を受ける変数が未定義になった。
+  指示どおりやると壊れる。
+  → 「1つ」とは *やり終えたときコードが壊れていないまとまり* と定義し直した。
+- 「名前を出すときは必ずURLを添える」を入れたら、初学者に読めない javadoc の
+  索引ページを貼るだけになった。
+  → URLは裏付けとして短く添えるだけ、説明の代わりに置かない、に変えた。
 
-## 6. 次タスク(Claude Code に依頼したいこと)
+**新しい制約を入れるなら、まず削れないか考えること。**
 
-1. 実行テスト(手動)
+### 段階を機械的に押し下げてはいけない
 
-- F5 で Extension Development Host 起動。
-- Copilot Chat で @tutor を選択。
-- 通常質問、/next、/log、/review を順に実行。
-- 合格基準:
-- 応答冒頭に [L1] 〜 [L4] が付く。
-- /log で件数と保存先が表示される。
-- /review で review フォルダに Markdown が生成される。
-- dogoTutor.generateReview / dogoTutor.openLogFolder が実行可能。
+「具体的な報告がない発話は段階1から」という判定を拡張側に入れたことがあるが、
+「入力した文字で ename 列を検索したい」のような具体的で正当な質問まで
+問いの整理に落ちて、意味のない作文課題を出すようになった。撤去済み。
 
-1. 公開準備
+報告がないことと、質問が漠然としていることは別物。段階の判断はモデルに委ねる。
+拡張側に残した判定は「12文字以下なら短く返す」（`SHORT_UTTERANCE`）だけ。
 
-- package.json の publisher を実値に変更。
-- package.json の repository.url を実URLに変更。
-- README の配布手順の最終文言を確認。
+### 隠すもの／隠さないもの
 
-1. 再パッケージ
+- 隠すのは **どう組み立てるか**。隠さないのは **何という名前か**。
+- クラス名・メソッド名・引数の形・添字の始まりは、調べれば載っている事実。
+  考えて導けないので、伏せても手が止まるだけで思考力は育たない。
+- 綴り間違いや import 漏れも遠回しにしない。粘らせても学ぶものがない。
+- API の使い方は **一般形で** 示す（`ps.setString(1, value)`）。
+  目の前の何行目をこう書き換えろ、とは言わせない。そこが課題本体。
 
-- npm run compile
-- npx vsce package
-- 生成された .vsix で再インストール確認。
+### 指示文が出力に漏れる
 
-## 7. 参考コマンド
+プロンプトは学生を三人称（「学生は」）で書いているので、モデルが文言を写すと
+「〜するのが学生の仕事です」のような文が学生の画面に出た。
+先頭に「応答は学生本人に向けて書く。この指示文の言い回しを持ち込まない」を置いてある。
+プロンプトに新しい文を足すときは、それが学生向けの文として読めてしまわないか確認すること。
 
-- npm install
-- npm run compile
-- npm run watch
-- npx vsce package
-- code --install-extension dogo-tutor-0.0.1.vsix --force
+### 参照URLの捏造対策
 
-## 8. 引き継ぎ時の判断基準
+モデルはもっともらしい存在しないURLを作る。リンク切れを踏んだ学生は
+調べること自体をやめてしまうので、`prompt.ts` の `REFERENCES`（8件）に
+実在確認済みのURLだけを置き、**そこに無いURLは書かせない**制約を入れている。
+一覧にないページを勧めたいときは検索語だけを示させる。
 
-- 公開前OK:
-- compile 成功
-- VSIX 生成成功
-- 手動実行テスト合格
-- publisher / repository が実値
-- 追加対応が必要:
-- @tutor 非表示
-- /review 未生成
-- Ollama接続エラーで実行不能(利用モデル設定未調整)
+全URLの生存は 2026-07-28 に確認済み。**年に一度は確認し直すこと。**
+教員が科目資料を足す口として `dogoTutor.references` 設定を用意してある。
+
+## 5. 既知の問題
+
+- **`/next` が実装されていない。** `package.json` には宣言があるが
+  `extension.ts` に分岐がなく、通常の質問と同じ経路を通る。VS Code のAPI仕様上
+  `/next` の部分は `request.prompt` から除かれるため、モデルには「次の段階を求めている」
+  信号が届かない。説明文と実装が食い違っている。
+- **ログが空のとき `/review` の応答が空になる。** `review.ts` が `undefined` を返すと
+  `extension.ts` の `if (uri)` で何も出力されず、通知だけ出てチャットには空の吹き出しが残る。
+- **話題が変わったときの段階リセットはプロンプト任せ。** 守られないと
+  `/log` の「深いヒントに頼った割合」が実態より高く出る。成績評価に使うなら要確認。
+- **作業フォルダ名だけ `doogo-tutor`**（o が2つ）。中身とリポジトリ名は `dogo-tutor`。
+  実害はないが紛らわしい。
+
+## 6. 環境について
+
+- VS Code 1.130.0 では **GitHub Copilot Chat 0.58.0 が標準同梱**されている。
+  `code --list-extensions` には出てこないので未インストールに見えるが、別途導入は不要。
+  必要なのは GitHub サインインのみ。
+- 旧引き継ぎ書にあった「Ollama 接続エラー」は**この拡張とは無関係**。
+  別途インストールされている `continue.continue` が既定で Ollama を見に行くのが原因。
+  本拡張は `vendor: "copilot"` 固定で、Ollama を呼ぶ経路はコード上に存在しない。
+- **VSIX をインストールしたまま F5 すると、チャット参加者ID `dogo.tutor` が重複登録される。**
+  開発版のつもりで古い VSIX 版をテストしてしまうので、
+  `code --uninstall-extension k-jinma.dogo-tutor` してから F5 すること。
+
+## 7. 次のタスク
+
+1. 4章の未確認項目（`/log`、`/review`、2つのコマンド）を手動テストする。
+2. `/next` を実装するか、`package.json` から宣言を削って実装と揃える。
+3. ログが空のときの `/review` に、チャットへのメッセージ出力を足す。
+4. Marketplace に出すなら、Azure DevOps で `k-jinma` の発行者を作り `npx vsce publish`。
+   学内配布に留めるなら `.vsix` を LMS に置く。
+
+## 8. 参考コマンド
+
+```bash
+npm install
+npm run compile
+npm run watch
+npx vsce package
+code --install-extension dogo-tutor-0.0.1.vsix --force
+code --uninstall-extension k-jinma.dogo-tutor
+```
