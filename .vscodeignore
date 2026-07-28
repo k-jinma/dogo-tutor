@@ -4,3 +4,10 @@ src/**
 **/*.map
 tsconfig.json
 node_modules/**
+
+# 開発用のファイル。配布物には要らない
+.git/**
+.gitignore
+package-lock.json
+HANDOFF_CLAUDE_CODE.md
+*.vsix
