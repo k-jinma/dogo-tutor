@@ -66,9 +66,9 @@ code --install-extension dogo-tutor-0.0.1.vsix
 チューターはヒントに参考資料のURLを添えます。ただし**案内できるのは実在確認済みの
 一覧に載ったURLだけ**で、それ以外は URL を書かず検索語だけを示します。生成AIは
 もっともらしい存在しないURLを作るので、リンク切れを踏んだ学生が調べること自体を
-やめてしまうのを防ぐための制限です。組み込みの一覧は
-[`src/prompt.ts`](src/prompt.ts) の `REFERENCES` にあります（Java API 日本語版、
-JDBCチュートリアル、Oracle JDBC開発者ガイド、dev.java、Python 日本語版、MDN 日本語版）。
+やめてしまうのを防ぐための制限です。組み込みの一覧には
+Java API 日本語版、JDBCチュートリアル、Oracle JDBC開発者ガイド、dev.java、
+Python 日本語版、MDN 日本語版が入っています。
 
 講義資料を足すには `.vscode/settings.json` に書きます。
 
