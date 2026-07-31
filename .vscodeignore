@@ -10,5 +10,7 @@ node_modules/**
 .gitignore
 package-lock.json
 HANDOFF_CLAUDE_CODE.md
+DEVELOPMENT.md
 *.vsix
 icon.svg
+publisher-logo-128.png
