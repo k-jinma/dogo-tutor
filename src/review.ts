@@ -21,6 +21,41 @@ export function deepHintRatio(entries: LogEntry[]): number {
   return withLevel.filter((e) => (e.level ?? 0) >= 3).length / withLevel.length;
 }
 
+/** Copilot のモデルを取得する。見つからなければ GitHub サインインへ誘導し、成功後に取り直す */
+async function pickModel(): Promise<vscode.LanguageModelChat | undefined> {
+  let [model] = await vscode.lm.selectChatModels({ vendor: "copilot" });
+  if (model) {
+    return model;
+  }
+
+  const signIn = "GitHub にサインイン";
+  const choice = await vscode.window.showErrorMessage(
+    "利用できる言語モデルがありません。GitHub Copilot へのサインインが必要です。",
+    signIn
+  );
+  if (choice !== signIn) {
+    return;
+  }
+
+  try {
+    await vscode.authentication.getSession("github", [], { createIfNone: true });
+  } catch {
+    return; // サインインがキャンセルされた
+  }
+
+  // サインイン直後は Copilot 側の準備が終わるまでモデルが見えないことがあるので、少し待ちながら取り直す
+  for (let i = 0; i < 10 && !model; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    [model] = await vscode.lm.selectChatModels({ vendor: "copilot" });
+  }
+  if (!model) {
+    vscode.window.showErrorMessage(
+      "サインイン後もモデルを取得できませんでした。GitHub Copilot が利用できるアカウントか確認してください。"
+    );
+  }
+  return model;
+}
+
 export async function generateReview(
   token: vscode.CancellationToken,
   onFragment?: (s: string) => void
@@ -37,11 +72,8 @@ export async function generateReview(
     return;
   }
 
-  const [model] = await vscode.lm.selectChatModels({ vendor: "copilot" });
+  const model = await pickModel();
   if (!model) {
-    vscode.window.showErrorMessage(
-      "利用できる言語モデルがありません。GitHub Copilot にサインインしているか確認してください。"
-    );
     return;
   }
 
