@@ -1,8 +1,8 @@
 {
   "name": "dogo-tutor",
   "displayName": "dogo-tutor",
-  "description": "答えではなくヒントだけを返す演習用チューター。やり取りを記録し、復習教材と小テストを生成します。",
-  "version": "0.0.1",
+  "description": "答えではなくヒントだけを返す演習用チューター。やり取りを記録し、復習教材と小テストを生成します。An AI tutor that gives hints, not answers — and generates review notes and quizzes from your work.",
+  "version": "0.0.2",
   "publisher": "k-jinma",
   "license": "MIT",
   "icon": "icon.png",
