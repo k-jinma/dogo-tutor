@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e3d63"/>
+      <stop offset="1" stop-color="#0f2440"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- 吹き出し -->
+  <rect x="86" y="104" width="340" height="248" rx="62" fill="#f7f2e6"/>
+  <path d="M292 336 L344 424 L360 322 Z" fill="#f7f2e6"/>
+  <!-- 湯けむり(道後温泉) -->
+  <g stroke="#d1512d" stroke-width="22" stroke-linecap="round" fill="none">
+    <path d="M186 252 q -16 -20 0 -40 q 16 -20 0 -40"/>
+    <path d="M256 262 q -16 -22 0 -44 q 16 -22 0 -44"/>
+    <path d="M326 252 q -16 -20 0 -40 q 16 -20 0 -40"/>
+    <path d="M158 292 a 98 36 0 0 0 196 0"/>
+  </g>
+</svg>

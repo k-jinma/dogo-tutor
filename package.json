@@ -4,11 +4,8 @@
   "description": "答えではなくヒントだけを返す演習用チューター。やり取りを記録し、復習教材と小テストを生成します。",
   "version": "0.0.1",
   "publisher": "k-jinma",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/k-jinma/dogo-tutor"
-  },
   "license": "MIT",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.95.0"
   },
