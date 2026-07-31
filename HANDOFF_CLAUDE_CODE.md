@@ -20,7 +20,7 @@ Copilot Chat のチャット参加者 `@tutor` として動く、大学演習向
 - 名称・設定キー `dogoTutor.*`・参加者ID `dogo.tutor` を統一。
 - LICENSE (MIT, Copyright: kazuhiro jinma)。
 - `publisher` を `k-jinma`、`repository.url` を実URLに設定済み。
-- Git 管理下。<https://github.com/k-jinma/dogo-tutor> の `main`。
+- Git 管理下。[https://github.com/k-jinma/dogo-tutor](https://github.com/k-jinma/dogo-tutor) の `main`。
 - `.gitignore` で `node_modules/` `out/` `*.vsix` `.vscode-test/` を除外。
 - `.vscodeignore` を整理。VSIX は 9 ファイル 24.29KB（`out/*.js` と README と LICENSE のみ）。
 - `npm run compile` 成功、`npx vsce package` 成功。
@@ -42,12 +42,12 @@ Copilot Chat のチャット参加者 `@tutor` として動く、大学演習向
 
 ## 3. 主要ファイル
 
-| ファイル | 役割 |
-| --- | --- |
-| `src/prompt.ts` | チューター人格、段階名、参照資料の一覧。**変更時は 4章 を必ず読むこと** |
-| `src/extension.ts` | 参加者登録、`/review` `/log` の分岐、コード添付、ログ記録 |
-| `src/logger.ts` | globalStorage への JSONL 追記、段階の抽出 |
-| `src/review.ts` | 直近24時間のログから Markdown 生成 |
+| ファイル             | 役割                                                                          |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `src/prompt.ts`    | チューター人格、段階名、参照資料の一覧。**変更時は 4章 を必ず読むこと** |
+| `src/extension.ts` | 参加者登録、`/review` `/log` の分岐、コード添付、ログ記録                 |
+| `src/logger.ts`    | globalStorage への JSONL 追記、段階の抽出                                     |
+| `src/review.ts`    | 直近24時間のログから Markdown 生成                                            |
 
 段階名は `prompt.ts` の `LEVEL_NAMES` と `levelTag()` が唯一の定義元。
 プロンプト・`/log` 表示・復習ノートがすべてここを参照するので、
