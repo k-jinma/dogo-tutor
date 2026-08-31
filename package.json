@@ -5,6 +5,10 @@
   "version": "0.0.2",
   "publisher": "k-jinma",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/k-jinma/dogo-tutor.git"
+  },
   "icon": "icon.png",
   "engines": {
     "vscode": "^1.95.0"

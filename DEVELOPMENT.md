@@ -26,12 +26,11 @@ VS Code でこのフォルダを開き、F5 を押すと拡張開発ホストが
 更新を公開するには:
 
 ```bash
-npx vsce publish patch --allow-missing-repository   # バージョンを上げて公開
+npx vsce publish patch   # バージョンを上げて公開
 ```
 
-`--allow-missing-repository` は、リポジトリ非公開方針のため package.json に
-repository フィールドを置いていないことによる確認を飛ばすためのもの。
-README にソースへの相対リンクを書くと vsce がエラーで止まるので書かない。
+リポジトリは公開しており、package.json に repository フィールドを設定済み。
+README 内の相対リンクは vsce が GitHub の絶対 URL に書き換える。
 
 ### PAT(Personal Access Token)
 
@@ -44,7 +43,7 @@ README にソースへの相対リンクを書くと vsce がエラーで止ま�
 ## .vsix での手動配布(学内配布・保険)
 
 ```bash
-npx vsce package --allow-missing-repository   # dogo-tutor-x.y.z.vsix ができる
+npx vsce package   # dogo-tutor-x.y.z.vsix ができる
 code --install-extension dogo-tutor-x.y.z.vsix
 ```
 
